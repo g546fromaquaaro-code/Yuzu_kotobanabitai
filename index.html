@@ -1,0 +1,1484 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>ことばナビ隊 〜英語なかま図鑑〜</title>
+<style>
+  :root{
+    --ink:#3A3357;
+    --ink-soft:#7C76A0;
+    --ink-faint:#ADA8C6;
+    --pink:#FF7BA9;
+    --pink-soft:#FFE7F0;
+    --coral:#FF9E7D;
+    --lemon:#FFD166;
+    --lemon-soft:#FFF6DC;
+    --mint:#3ECFAF;
+    --mint-soft:#DFF8F1;
+    --lilac:#A88BEB;
+    --lilac-soft:#EEE7FE;
+    --sky:#7EC4F5;
+    --sky-soft:#E4F2FD;
+    --card:rgba(255,255,255,0.92);
+    --line:#EFEBF8;
+    --shadow: 0 10px 26px rgba(122,102,170,0.14);
+    --shadow-sm: 0 4px 12px rgba(122,102,170,0.10);
+    --radius: 26px;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color: transparent;}
+  html,body{margin:0;padding:0;height:100%;}
+  body{
+    font-family:"Hiragino Maru Gothic ProN","Yu Gothic Rounded","Hiragino Sans","Yu Gothic",sans-serif;
+    color:var(--ink);
+    min-height:100%;
+    overscroll-behavior:none;
+    background:#FDF9FF;
+  }
+  /* dreamy layered background */
+  body::before{
+    content:"";
+    position:fixed; inset:0; z-index:-2;
+    background:
+      radial-gradient(680px 460px at 12% -6%, #FFE9F4 0%, transparent 62%),
+      radial-gradient(620px 420px at 92% 4%, #E8E4FF 0%, transparent 60%),
+      radial-gradient(560px 400px at 50% 104%, #DFF6FF 0%, transparent 62%),
+      linear-gradient(180deg, #FFFBFE 0%, #FBF7FF 55%, #F6FCFF 100%);
+  }
+  body::after{
+    content:"";
+    position:fixed; inset:0; z-index:-1; pointer-events:none;
+    background-image:
+      radial-gradient(circle, rgba(255,255,255,0.9) 0 2px, transparent 2px),
+      radial-gradient(circle, rgba(255,220,240,0.9) 0 3px, transparent 3px);
+    background-size: 120px 120px, 190px 190px;
+    background-position: 20px 40px, 90px 130px;
+    opacity:.55;
+  }
+  #app{
+    max-width:520px;
+    margin:0 auto;
+    min-height:100vh;
+    padding-bottom:96px;
+    position:relative;
+  }
+
+  /* ---------- Header ---------- */
+  header{padding:18px 16px 6px 16px;}
+  .header-row{position:relative; display:flex; align-items:center; justify-content:center; min-height:52px;}
+  header h1{
+    font-size:21px; margin:0; letter-spacing:0.6px; text-align:center;
+    background:linear-gradient(90deg, var(--pink), var(--lilac) 55%, var(--sky));
+    -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent;
+  }
+  header h1 .sub{
+    display:block; font-size:11.5px; margin-top:4px; font-weight:normal;
+    color:var(--ink-soft); -webkit-text-fill-color:var(--ink-soft);
+  }
+  .icon-btn{
+    position:absolute; top:4px;
+    width:40px; height:40px; border-radius:50%;
+    border:none; background:rgba(255,255,255,0.9);
+    font-size:17px; box-shadow:var(--shadow-sm);
+    display:flex; align-items:center; justify-content:center;
+  }
+  .icon-btn.left{left:0;}
+  .icon-btn.right{right:0;}
+  .icon-btn.on{background:linear-gradient(135deg, var(--pink-soft), var(--lilac-soft));}
+
+  .passport{display:flex; gap:8px; overflow-x:auto; padding:12px 16px 4px 16px; scrollbar-width:none;}
+  .passport::-webkit-scrollbar{display:none;}
+  .stamp{flex:0 0 auto; width:56px; text-align:center;}
+  .stamp .circ{
+    width:52px;height:52px;border-radius:50%;
+    background:rgba(255,255,255,0.95);
+    border:2.5px solid var(--line);
+    display:flex;align-items:center;justify-content:center;
+    font-size:24px; box-shadow:var(--shadow-sm);
+    filter:grayscale(1) opacity(0.5);
+    transition:transform .3s cubic-bezier(.3,1.4,.5,1), filter .3s ease, border-color .3s ease;
+  }
+  .stamp.active .circ{filter:none; border-color: var(--fam-color, var(--pink)); transform:scale(1.07);}
+  .stamp.full .circ{box-shadow:0 0 0 4px rgba(255,209,102,0.35), var(--shadow-sm);}
+  .stamp .stars{font-size:10px; color:var(--lemon); margin-top:3px; letter-spacing:1px;}
+  .stamp .nm{font-size:9px;color:var(--ink-faint);margin-top:1px;}
+
+  main{padding:6px 16px 10px 16px;}
+  .view{display:none;}
+  .view.active{display:block; animation:fadeUp .28s ease;}
+  @keyframes fadeUp{from{opacity:0; transform:translateY(8px);} to{opacity:1; transform:translateY(0);}}
+
+  /* ---------- Cards ---------- */
+  .card{
+    background:var(--card); backdrop-filter: blur(6px);
+    border-radius:var(--radius); box-shadow:var(--shadow);
+    padding:16px; margin-bottom:14px;
+    border:1px solid rgba(255,255,255,0.7);
+  }
+  .fam-card{
+    background:var(--card); backdrop-filter:blur(6px);
+    border-radius:22px; box-shadow:var(--shadow-sm);
+    margin-bottom:11px; overflow:hidden;
+    border:2px solid rgba(255,255,255,0.8);
+    transition:border-color .22s ease, transform .22s ease;
+  }
+  .fam-card.open{border-color:var(--fam-color); transform:translateY(-1px);}
+  .fam-head{display:flex; align-items:center; gap:12px; padding:12px 14px; cursor:pointer;}
+  .fam-emoji{
+    width:46px;height:46px;border-radius:16px;
+    background:var(--fam-bg, #eee);
+    display:flex;align-items:center;justify-content:center;
+    font-size:22px; flex:0 0 auto;
+    transform:rotate(-4deg);
+  }
+  .fam-title{flex:1;}
+  .fam-title b{font-size:16px;}
+  .fam-title span{display:block; font-size:11px; color:var(--ink-faint); margin-top:1px;}
+  .be-pill{
+    display:inline-block; font-size:10px; font-weight:800;
+    padding:2px 8px; border-radius:999px; margin-left:4px;
+    background:var(--lilac-soft); color:var(--lilac);
+  }
+  .fam-arrow{font-size:13px; color:var(--ink-faint); transition:transform .22s ease;}
+  .fam-card.open .fam-arrow{transform:rotate(180deg);}
+  .fam-body{max-height:0; overflow:hidden; transition:max-height .32s ease; padding:0 14px;}
+  .fam-card.open .fam-body{max-height:900px; padding:0 14px 14px 14px;}
+  .form-row{
+    display:flex; align-items:center; gap:11px;
+    background:rgba(252,250,255,0.9); border-radius:16px;
+    padding:10px 12px; margin-top:8px;
+  }
+  .form-en{font-weight:800; font-size:17px; color:var(--fam-color); min-width:54px;}
+  .form-meta{flex:1;}
+  .form-label{font-size:10.5px; color:var(--ink-faint);}
+  .form-ex{font-size:12.5px; margin-top:2px; line-height:1.55;}
+  .form-ex b{color:var(--ink);}
+
+  /* ---------- Overview table ---------- */
+  .overview-scroll{
+    overflow-x:auto; -webkit-overflow-scrolling:touch;
+    border-radius:22px; box-shadow:var(--shadow); background:rgba(255,255,255,0.95);
+  }
+  table.overview-table{border-collapse:separate; border-spacing:0; width:100%; min-width:660px; font-size:12.5px;}
+  table.overview-table th, table.overview-table td{border-bottom:1px solid var(--line); border-right:1px solid var(--line); padding:11px 6px; text-align:center;}
+  table.overview-table thead th{
+    background:linear-gradient(135deg, var(--lemon-soft), var(--pink-soft));
+    color:#B05A85; font-weight:800; font-size:11.5px; position:sticky; top:0;
+  }
+  table.overview-table td.group-cell{background:var(--sky-soft); font-weight:800; color:#4A8CB8;}
+  table.overview-table td.jp-cell{background:var(--pink-soft); font-weight:800; color:#D2568A;}
+  table.overview-table td.be-cell{font-weight:800; color:var(--lilac); background:var(--lilac-soft);}
+  table.overview-table td.en-cell{font-weight:700;}
+
+  /* ---------- Quiz ---------- */
+  .quiz-top{display:flex; justify-content:space-between; align-items:center; font-size:12px; color:var(--ink-soft); margin-bottom:9px; padding:0 4px;}
+  .quiz-top .streak{color:var(--pink); font-weight:800;}
+  .qcard{
+    background:var(--card); backdrop-filter:blur(6px);
+    border-radius:var(--radius); box-shadow:var(--shadow);
+    padding:20px 18px; text-align:center;
+    border:1px solid rgba(255,255,255,0.8);
+  }
+  .qcard .qtag{
+    display:inline-block; font-size:11px;
+    background:var(--fam-bg,#eee); color:var(--fam-color,#666);
+    padding:5px 12px; border-radius:999px; margin-bottom:10px; font-weight:700;
+  }
+  .qcard .qjp{font-size:13px; color:var(--ink-soft); margin-bottom:6px; line-height:1.6;}
+  .qcard .qsentence{font-size:19px; font-weight:800; margin:8px 0 4px 0; line-height:1.6;}
+  .qcard .qsentence .blank{display:inline-block; min-width:56px; border-bottom:3px solid var(--pink); color:var(--pink);}
+  .options{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:16px;}
+  .opt-btn{
+    font-family:inherit; font-size:17px; font-weight:800;
+    padding:15px 8px; border-radius:18px;
+    border:2px solid var(--line); background:#fff; color:var(--ink);
+    box-shadow:var(--shadow-sm); transition:transform .12s ease;
+  }
+  .opt-btn:active{transform:scale(0.96);}
+  .opt-btn.correct{background:var(--mint-soft); border-color:var(--mint); color:#1F9B80;}
+  .opt-btn.wrong{background:var(--pink-soft); border-color:var(--pink); color:#D2568A;}
+  .opt-btn[disabled]{opacity:0.55;}
+  .next-wrap{margin-top:16px; min-height:46px;}
+  .btn-next{
+    font-family:inherit; font-size:15px; font-weight:800;
+    padding:13px 28px; border-radius:999px; border:none;
+    background:linear-gradient(135deg, var(--pink), var(--coral));
+    color:#fff; box-shadow:0 6px 16px rgba(255,123,169,0.4);
+  }
+  .btn-next:active{transform:scale(0.97);}
+  .feedback-line{font-size:13px; margin-top:10px; min-height:18px; font-weight:700;}
+  .feedback-line.ok{color:#1F9B80;}
+  .feedback-line.ng{color:#D2568A;}
+
+  /* ---------- Mode toggle / chips ---------- */
+  .mode-toggle{display:flex; gap:7px; margin-bottom:12px;}
+  .mode-btn{
+    flex:1; font-family:inherit; font-size:11.5px; font-weight:800;
+    padding:11px 4px; border-radius:16px; border:2px solid var(--line);
+    background:rgba(255,255,255,0.9); color:var(--ink-faint);
+  }
+  .mode-btn.active{border-color:var(--pink); color:var(--pink); background:var(--pink-soft);}
+  .chip-row{display:flex; gap:8px; overflow-x:auto; padding:2px 2px 10px 2px; scrollbar-width:none;}
+  .chip-row::-webkit-scrollbar{display:none;}
+  .chip{
+    flex:0 0 auto; display:flex; align-items:center; gap:6px;
+    background:rgba(255,255,255,0.95); border:2px solid var(--line);
+    border-radius:999px; padding:8px 14px;
+    font-size:13px; font-weight:800; color:var(--ink-faint);
+    box-shadow:var(--shadow-sm);
+  }
+  .chip.active{border-color:var(--fam-color); color:var(--fam-color); background:var(--fam-bg);}
+
+  /* ---------- Drill table ---------- */
+  .drill-table{background:var(--card); border-radius:var(--radius); box-shadow:var(--shadow); padding:16px; border:1px solid rgba(255,255,255,0.8);}
+  .drill-row{display:flex; align-items:center; gap:10px; padding:12px 6px; border-bottom:1px dashed var(--line);}
+  .drill-row:last-child{border-bottom:none;}
+  .drill-label{width:98px; font-size:11.5px; color:var(--ink-soft); line-height:1.45;}
+  .drill-blank{
+    flex:1; height:44px; border-radius:14px;
+    border:2px dashed var(--line);
+    display:flex; align-items:center; justify-content:center;
+    font-size:17px; font-weight:800; color:var(--ink-faint);
+    background:rgba(252,250,255,0.9);
+  }
+  .drill-blank.selected{border-color:var(--fam-color); background:var(--fam-bg); color:var(--fam-color); border-style:solid;}
+  .drill-blank.filled{border-style:solid; border-color:var(--mint); background:var(--mint-soft); color:#1F9B80;}
+  .drill-choices{display:flex; flex-wrap:wrap; gap:8px; margin-top:14px;}
+  .dchoice{
+    font-family:inherit; font-size:15px; font-weight:800;
+    padding:11px 17px; border-radius:14px; border:2px solid var(--line);
+    background:#fff; color:var(--ink); box-shadow:var(--shadow-sm);
+  }
+  .dchoice:active{transform:scale(0.96);}
+  .drill-done{text-align:center; padding:20px 0 4px 0;}
+  .drill-done .big{font-size:36px;}
+
+  /* ---------- Be-verb baskets ---------- */
+  .basket-row{display:flex; gap:9px; margin-top:14px;}
+  .basket{
+    flex:1; background:rgba(252,250,255,0.9);
+    border:2px dashed var(--line); border-radius:18px;
+    padding:10px 6px; text-align:center; min-height:112px;
+    transition:border-color .2s ease, background .2s ease;
+  }
+  .basket-label{font-size:18px; font-weight:800; margin-bottom:6px;
+    background:linear-gradient(90deg, var(--pink), var(--lilac));
+    -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent;}
+  .basket-items{display:flex; flex-wrap:wrap; gap:4px; justify-content:center;}
+  .basket-tag{font-size:10.5px; font-weight:800; padding:4px 7px; border-radius:9px;}
+
+  /* ---------- Arrange (word order) ---------- */
+  .arrange-slot{
+    min-height:56px; border-radius:18px;
+    border:2px dashed var(--line); background:rgba(252,250,255,0.9);
+    display:flex; flex-wrap:wrap; gap:7px; align-items:center;
+    padding:10px; margin-top:12px;
+  }
+  .arrange-slot.done{border-style:solid; border-color:var(--mint); background:var(--mint-soft);}
+  .arrange-slot .placeholder{font-size:12px; color:var(--ink-faint); margin:auto;}
+  .word-tile{
+    font-family:inherit; font-size:15px; font-weight:800;
+    padding:10px 14px; border-radius:13px; border:2px solid var(--line);
+    background:#fff; color:var(--ink); box-shadow:var(--shadow-sm);
+  }
+  .word-tile:active{transform:scale(0.95);}
+  .word-tile.placed{background:linear-gradient(135deg, var(--pink-soft), var(--lilac-soft)); border-color:var(--pink); color:#C9508A;}
+  .word-tile[disabled]{opacity:0.3;}
+  .word-bank{display:flex; flex-wrap:wrap; gap:8px; margin-top:14px; justify-content:center;}
+  .arrange-actions{display:flex; gap:8px; margin-top:14px;}
+  .btn-ghost{
+    flex:1; font-family:inherit; font-size:13px; font-weight:800;
+    padding:12px 6px; border-radius:16px; border:2px solid var(--line);
+    background:rgba(255,255,255,0.9); color:var(--ink-soft);
+  }
+  .btn-solid{
+    flex:1; font-family:inherit; font-size:13px; font-weight:800;
+    padding:12px 6px; border-radius:16px; border:none;
+    background:linear-gradient(135deg, var(--mint), var(--sky));
+    color:#fff; box-shadow:0 6px 16px rgba(62,207,175,0.35);
+  }
+
+  /* ---------- Zukan ---------- */
+  .zukan-grid{display:grid; grid-template-columns:1fr 1fr; gap:12px;}
+  .zcard{
+    background:var(--card); border-radius:22px; box-shadow:var(--shadow-sm);
+    padding:14px; text-align:center; border:1px solid rgba(255,255,255,0.8);
+  }
+  .zcard .zemoji{
+    width:62px;height:62px;border-radius:20px;
+    background:var(--fam-bg,#eee);
+    display:flex;align-items:center;justify-content:center;
+    font-size:28px;margin:0 auto 8px auto;
+    filter:grayscale(1) opacity(0.45);
+    transform:rotate(-4deg);
+  }
+  .zcard.on .zemoji{filter:none;}
+  .zcard .zname{font-size:13px; font-weight:800;}
+  .zcard .zstars{font-size:14px; color:var(--lemon); margin-top:4px; letter-spacing:2px;}
+  .zcard .zcount{font-size:10px; color:var(--ink-faint); margin-top:2px;}
+  .zsummary{
+    display:flex; justify-content:space-between; align-items:center;
+    background:linear-gradient(135deg, #FFE7F0, #EEE7FE 55%, #E4F2FD);
+    border-radius:24px; padding:18px; margin-bottom:14px;
+    box-shadow:var(--shadow-sm);
+  }
+  .zsummary .znum{font-size:27px; font-weight:800; color:var(--lilac);}
+  .zsummary .zlabel{font-size:11px; color:var(--ink-soft);}
+  .progress-track{height:10px; border-radius:999px; background:rgba(255,255,255,0.75); overflow:hidden; margin-top:8px; width:150px;}
+  .progress-fill{height:100%; border-radius:999px; background:linear-gradient(90deg, var(--pink), var(--lemon)); transition:width .5s ease;}
+
+  /* ---------- Settings ---------- */
+  .set-row{
+    display:flex; align-items:center; gap:12px;
+    padding:14px 4px; border-bottom:1px dashed var(--line);
+  }
+  .set-row:last-child{border-bottom:none;}
+  .set-ic{
+    width:38px;height:38px;border-radius:13px; flex:0 0 auto;
+    display:flex;align-items:center;justify-content:center; font-size:18px;
+    background:var(--lilac-soft);
+  }
+  .set-meta{flex:1;}
+  .set-meta b{font-size:14px;}
+  .set-meta span{display:block; font-size:11px; color:var(--ink-faint); margin-top:2px; line-height:1.4;}
+  .switch{
+    width:52px;height:30px;border-radius:999px; border:none;
+    background:#E4E0F0; position:relative; flex:0 0 auto; transition:background .22s ease;
+  }
+  .switch::after{
+    content:""; position:absolute; top:3px; left:3px;
+    width:24px;height:24px;border-radius:50%; background:#fff;
+    box-shadow:0 2px 5px rgba(0,0,0,0.16); transition:transform .22s cubic-bezier(.3,1.4,.5,1);
+  }
+  .switch.on{background:linear-gradient(135deg, var(--pink), var(--lilac));}
+  .switch.on::after{transform:translateX(22px);}
+  input[type=range]{
+    -webkit-appearance:none; width:110px; height:6px; border-radius:999px;
+    background:linear-gradient(90deg, var(--pink), var(--lilac)); flex:0 0 auto;
+  }
+  input[type=range]::-webkit-slider-thumb{
+    -webkit-appearance:none; width:22px;height:22px;border-radius:50%;
+    background:#fff; box-shadow:0 2px 6px rgba(0,0,0,0.22); border:2px solid var(--pink);
+  }
+  .theme-row{display:flex; gap:9px; margin-top:4px;}
+  .theme-swatch{
+    flex:1; height:52px; border-radius:16px; border:3px solid transparent;
+    display:flex; align-items:flex-end; justify-content:center;
+    font-size:9.5px; font-weight:800; color:rgba(255,255,255,0.95);
+    padding-bottom:5px; box-shadow:var(--shadow-sm);
+  }
+  .theme-swatch.active{border-color:var(--ink); }
+  .reset-btn{
+    display:block; width:100%; margin-top:6px;
+    background:rgba(255,255,255,0.9); border:2px solid var(--pink-soft); color:#D2568A;
+    font-family:inherit; font-size:12.5px; font-weight:800; padding:12px 14px; border-radius:16px;
+  }
+
+  /* ---------- Tab bar ---------- */
+  nav.tabbar{
+    position:fixed; left:0; right:0; bottom:0;
+    max-width:520px; margin:0 auto;
+    background:rgba(255,255,255,0.93); backdrop-filter:blur(12px);
+    border-top:1px solid var(--line);
+    display:flex;
+    padding:7px 5px calc(7px + env(safe-area-inset-bottom,0px)) 5px;
+    box-shadow:0 -6px 18px rgba(122,102,170,0.09);
+  }
+  nav.tabbar button{
+    flex:1; font-family:inherit; background:none; border:none;
+    display:flex; flex-direction:column; align-items:center; gap:2px;
+    padding:6px 1px; color:var(--ink-faint); font-size:9px; font-weight:700;
+    border-radius:16px; transition:color .2s ease, background .2s ease;
+  }
+  nav.tabbar button .ic{font-size:19px; transition:transform .25s cubic-bezier(.3,1.5,.5,1);}
+  nav.tabbar button.active{color:var(--pink); background:linear-gradient(160deg, var(--pink-soft), rgba(255,255,255,0));}
+  nav.tabbar button.active .ic{transform:translateY(-2px) scale(1.12);}
+
+  /* ---------- Toast / confetti / celebrate ---------- */
+  #toast{
+    position:fixed; top:14px; left:50%; transform:translateX(-50%);
+    background:rgba(58,51,87,0.93); color:#fff; padding:11px 20px;
+    border-radius:999px; font-size:13px; font-weight:700; z-index:50;
+    opacity:0; pointer-events:none; transition:opacity .25s ease, transform .25s ease;
+  }
+  #toast.show{opacity:1; transform:translateX(-50%) translateY(6px);}
+  #audioHint{
+    position:fixed; bottom:100px; left:50%; transform:translateX(-50%);
+    background:linear-gradient(135deg, var(--lilac), var(--pink));
+    color:#fff; padding:10px 18px; border-radius:999px;
+    font-size:12px; font-weight:800; z-index:55;
+    box-shadow:0 8px 20px rgba(168,139,235,0.45);
+    animation: floaty 1.8s ease-in-out infinite;
+  }
+  @keyframes floaty{0%,100%{transform:translateX(-50%) translateY(0);}50%{transform:translateX(-50%) translateY(-6px);}}
+  .confetti{position:fixed; font-size:22px; z-index:60; pointer-events:none; animation: pop-fly 0.95s ease-out forwards;}
+  @keyframes pop-fly{
+    0%{opacity:1; transform:translateY(0) scale(0.5) rotate(0deg);}
+    30%{transform:translateY(-20px) scale(1.15) rotate(12deg);}
+    100%{opacity:0; transform:translateY(-78px) scale(1) rotate(-14deg);}
+  }
+  @keyframes shake{0%,100%{transform:translateX(0);}25%{transform:translateX(-6px);}75%{transform:translateX(6px);}}
+  .shake{animation:shake .35s ease;}
+  .celebrate-overlay{position:fixed; inset:0; display:flex; align-items:center; justify-content:center; pointer-events:none; z-index:80; opacity:0; transition:opacity .25s ease;}
+  .celebrate-overlay.show{opacity:1;}
+  .celebrate-card{
+    background:rgba(255,255,255,0.97); border-radius:28px; padding:28px 36px; text-align:center;
+    box-shadow:0 18px 40px rgba(122,102,170,0.28); animation: pop-in .38s ease forwards; max-width:78vw;
+    border:3px solid var(--pink-soft);
+  }
+  .celebrate-card .emoji{font-size:54px;}
+  .celebrate-card .msg{font-size:15px; font-weight:800; margin-top:8px; line-height:1.45;}
+  @keyframes pop-in{0%{transform:scale(0.6) rotate(-6deg); opacity:0;}60%{transform:scale(1.1) rotate(2deg); opacity:1;}100%{transform:scale(1) rotate(0);}}
+
+  h2.section-title{font-size:14.5px; margin:4px 4px 11px 4px; color:var(--ink-soft); font-weight:800;}
+  @media (prefers-reduced-motion: reduce){
+    *{animation-duration:0.01ms !important; transition-duration:0.01ms !important;}
+  }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <header>
+    <div class="header-row">
+      <button class="icon-btn left" id="bgmBtn" title="BGM">🎵</button>
+      <h1>ことばナビ隊<span class="sub">〜英語の「わたし・あなた・彼」なかま図鑑〜</span></h1>
+      <button class="icon-btn right" id="settingsBtn" title="設定">⚙️</button>
+    </div>
+  </header>
+
+  <div class="passport" id="passportBar"></div>
+
+  <main>
+    <section class="view" id="view-learn">
+      <h2 class="section-title">📖 タップして なかまを知ろう</h2>
+      <div id="learnList"></div>
+    </section>
+
+    <section class="view" id="view-overview">
+      <h2 class="section-title">📊 人称代名詞 ぜんぶ表</h2>
+      <div id="overviewWrap"></div>
+    </section>
+
+    <section class="view" id="view-quiz">
+      <div class="quiz-top">
+        <span>✏️ クイズ道場</span>
+        <span class="streak" id="streakLabel">れんぞく正解 0</span>
+      </div>
+      <div class="qcard" id="qcard"></div>
+    </section>
+
+    <section class="view" id="view-drill">
+      <h2 class="section-title">🎯 特訓</h2>
+      <div class="mode-toggle" id="drillModeToggle"></div>
+      <div id="drillBody"></div>
+    </section>
+
+    <section class="view" id="view-zukan">
+      <h2 class="section-title">📔 なかま図鑑</h2>
+      <div class="zsummary">
+        <div>
+          <div class="znum" id="starTotal">0</div>
+          <div class="zlabel">あつめたほし</div>
+          <div class="progress-track"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+        </div>
+        <div style="font-size:42px;">🏅</div>
+      </div>
+      <div class="zukan-grid" id="zukanGrid"></div>
+    </section>
+
+    <section class="view" id="view-settings">
+      <h2 class="section-title">⚙️ 設定</h2>
+      <div class="card" id="settingsCard"></div>
+      <div class="card">
+        <div class="set-meta" style="margin-bottom:10px;"><b>いろのきぶん</b><span>すきなテーマをえらべます</span></div>
+        <div class="theme-row" id="themeRow"></div>
+      </div>
+      <div class="card">
+        <div class="set-meta" style="margin-bottom:10px;"><b>きろく</b><span>ほしとクリア回数をぜんぶ消します</span></div>
+        <button class="reset-btn" id="resetBtn">きろくをリセットする</button>
+      </div>
+    </section>
+  </main>
+
+  <nav class="tabbar">
+    <button data-view="learn" class="tab-btn active"><span class="ic">📖</span>学ぶ</button>
+    <button data-view="overview" class="tab-btn"><span class="ic">📊</span>全体表</button>
+    <button data-view="quiz" class="tab-btn"><span class="ic">✏️</span>クイズ</button>
+    <button data-view="drill" class="tab-btn"><span class="ic">🎯</span>特訓</button>
+    <button data-view="zukan" class="tab-btn"><span class="ic">📔</span>図鑑</button>
+  </nav>
+
+</div>
+<div id="toast"></div>
+<div id="celebrateOverlay" class="celebrate-overlay"></div>
+
+<script>
+(function(){
+"use strict";
+
+/* ============ DATA ============ */
+var FAMILIES = [
+  { id:"I", name:"わたし", sub:"単数の1人称", emoji:"🙋", color:"#FF7BA9", bg:"#FFE7F0", be:"am",
+    forms:[
+      {key:"subject", label:"「〜は・〜が」", en:"I", jp:"わたしは 学生です。", blank:"___ am a student.", full:"I am a student."},
+      {key:"possessive", label:"「〜の」", en:"my", jp:"これは わたしの ペンです。", blank:"This is ___ pen.", full:"This is my pen."},
+      {key:"object", label:"「〜に・〜を」", en:"me", jp:"彼女は わたしに 本をくれました。", blank:"She gave ___ a book.", full:"She gave me a book."},
+      {key:"possessivePronoun", label:"「〜のもの」", en:"mine", jp:"このペンは わたしのもの です。", blank:"This pen is ___.", full:"This pen is mine."}
+    ]
+  },
+  { id:"We", name:"わたしたち", sub:"複数の1人称", emoji:"👨‍👩‍👦", color:"#FF9E7D", bg:"#FFEBE2", be:"are",
+    forms:[
+      {key:"subject", label:"「〜は・〜が」", en:"We", jp:"わたしたちは 家族です。", blank:"___ are a family.", full:"We are a family."},
+      {key:"possessive", label:"「〜の」", en:"our", jp:"これは わたしたちの 教室です。", blank:"This is ___ classroom.", full:"This is our classroom."},
+      {key:"object", label:"「〜に・〜を」", en:"us", jp:"メアリーは わたしたちに ハンカチをくれました。", blank:"Mary gave ___ a handkerchief.", full:"Mary gave us a handkerchief."},
+      {key:"possessivePronoun", label:"「〜のもの」", en:"ours", jp:"あのおもちゃは わたしたちのもの です。", blank:"That toy is ___.", full:"That toy is ours."}
+    ]
+  },
+  { id:"You", name:"あなた", sub:"2人称(単数・複数)", emoji:"🫵", color:"#E0A63B", bg:"#FFF6DC", be:"are",
+    forms:[
+      {key:"subject", label:"「〜は・〜が」", en:"You", jp:"あなたは 学生です。", blank:"___ are a student.", full:"You are a student."},
+      {key:"possessive", label:"「〜の」", en:"your", jp:"これは あなたの ふでばこです。", blank:"This is ___ pencil case.", full:"This is your pencil case."},
+      {key:"object", label:"「〜に・〜を」", en:"you", jp:"わたしは あなたに メールを送りました。", blank:"I sent ___ an e-mail.", full:"I sent you an e-mail."},
+      {key:"possessivePronoun", label:"「〜のもの」", en:"yours", jp:"この消しゴムは あなたのもの です。", blank:"This eraser is ___.", full:"This eraser is yours."}
+    ]
+  },
+  { id:"He", name:"彼", sub:"男性・単数の3人称", emoji:"👦", color:"#3ECFAF", bg:"#DFF8F1", be:"is",
+    forms:[
+      {key:"subject", label:"「〜は・〜が」", en:"He", jp:"彼は 学生です。", blank:"___ is a student.", full:"He is a student."},
+      {key:"possessive", label:"「〜の」", en:"his", jp:"あれは 彼の かばんです。", blank:"That is ___ bag.", full:"That is his bag."},
+      {key:"object", label:"「〜に・〜を」", en:"him", jp:"トムは 彼に えんぴつを貸しました。", blank:"Tom lent ___ a pencil.", full:"Tom lent him a pencil."},
+      {key:"possessivePronoun", label:"「〜のもの」", en:"his", jp:"あの靴は 彼のもの です。", blank:"Those shoes are ___.", full:"Those shoes are his."}
+    ]
+  },
+  { id:"She", name:"彼女", sub:"女性・単数の3人称", emoji:"👧", color:"#E85A8C", bg:"#FCE1EB", be:"is",
+    forms:[
+      {key:"subject", label:"「〜は・〜が」", en:"She", jp:"彼女は 先生になりました。", blank:"___ became a teacher.", full:"She became a teacher."},
+      {key:"possessive", label:"「〜の」", en:"her", jp:"あれは 彼女の ノートです。", blank:"That is ___ notebook.", full:"That is her notebook."},
+      {key:"object", label:"「〜に・〜を」", en:"her", jp:"わたしは 彼女と ランチに行きました。", blank:"I went to lunch with ___.", full:"I went to lunch with her."},
+      {key:"possessivePronoun", label:"「〜のもの」", en:"hers", jp:"このコートは 彼女のもの です。", blank:"This coat is ___.", full:"This coat is hers."}
+    ]
+  },
+  { id:"It", name:"それ", sub:"もの・こと(単数3人称)", emoji:"🧸", color:"#5AAEE8", bg:"#E4F2FD", be:"is",
+    forms:[
+      {key:"subject", label:"「〜は・〜が」(訳さない事も)", en:"It", jp:"雨が降ります。", blank:"___ rains.", full:"It rains."},
+      {key:"possessive", label:"「それの」", en:"its", jp:"わたしは その色が 好きです。", blank:"I like ___ color.", full:"I like its color."},
+      {key:"object", label:"「それを・が」", en:"it", jp:"彼は それが 大好きです。", blank:"He loves ___.", full:"He loves it."}
+    ]
+  },
+  { id:"They", name:"彼ら", sub:"複数の3人称", emoji:"👥", color:"#A88BEB", bg:"#EEE7FE", be:"are",
+    forms:[
+      {key:"subject", label:"「〜は・〜が」", en:"They", jp:"彼らは わたしのクラスメートです。", blank:"___ are my classmates.", full:"They are my classmates."},
+      {key:"possessive", label:"「〜の」", en:"their", jp:"田中先生は 彼らの 先生です。", blank:"Mr. Tanaka is ___ teacher.", full:"Mr. Tanaka is their teacher."},
+      {key:"object", label:"「〜に・〜を」", en:"them", jp:"わたしたちは 彼らと 遊びます。", blank:"We will play with ___.", full:"We will play with them."},
+      {key:"possessivePronoun", label:"「〜のもの」", en:"theirs", jp:"この計画は 彼らのもの です。", blank:"This plan is ___.", full:"This plan is theirs."}
+    ]
+  }
+];
+
+var FORM_ROW_LABEL = {
+  subject:"主語(だれが)", possessive:"所有(だれの)", object:"目的(だれに)", possessivePronoun:"所有代名詞(だれのもの)"
+};
+
+var OVERVIEW_ROWS = [
+  {group:"単数", person:"1人称", famId:"I"},
+  {group:"単数", person:"2人称", famId:"You", nameOverride:"あなた"},
+  {group:"単数", person:"3人称(男)", famId:"He"},
+  {group:"単数", person:"3人称(女)", famId:"She"},
+  {group:"単数", person:"3人称(もの)", famId:"It"},
+  {group:"複数", person:"1人称", famId:"We"},
+  {group:"複数", person:"2人称", famId:"You", nameOverride:"あなたたち"},
+  {group:"複数", person:"3人称", famId:"They"}
+];
+
+var BEVERB_ITEMS = FAMILIES.map(function(f){
+  return {id:f.id, label:f.forms[0].en, emoji:f.emoji, color:f.color, bg:f.bg, be:f.be};
+});
+
+/* --- Arrange (word order) questions --- */
+var ARRANGE_Q = [
+  {famId:"I",    jp:"わたしは 学生です。",              words:["I","am","a","student."]},
+  {famId:"I",    jp:"これは わたしの ペンです。",          words:["This","is","my","pen."]},
+  {famId:"I",    jp:"このペンは わたしのものです。",        words:["This","pen","is","mine."]},
+  {famId:"You",  jp:"あなたは 学生です。",              words:["You","are","a","student."]},
+  {famId:"You",  jp:"これは あなたの ふでばこです。",       words:["This","is","your","pencil case."]},
+  {famId:"You",  jp:"この消しゴムは あなたのものです。",     words:["This","eraser","is","yours."]},
+  {famId:"He",   jp:"彼は 学生です。",                words:["He","is","a","student."]},
+  {famId:"He",   jp:"あれは 彼の かばんです。",           words:["That","is","his","bag."]},
+  {famId:"She",  jp:"彼女は わたしの先生です。",          words:["She","is","my","teacher."]},
+  {famId:"She",  jp:"このコートは 彼女のものです。",        words:["This","coat","is","hers."]},
+  {famId:"It",   jp:"それは わたしのねこです。",           words:["It","is","my","cat."]},
+  {famId:"It",   jp:"わたしは その色が 好きです。",         words:["I","like","its","color."]},
+  {famId:"We",   jp:"わたしたちは 家族です。",            words:["We","are","a","family."]},
+  {famId:"We",   jp:"あのおもちゃは わたしたちのものです。",   words:["That","toy","is","ours."]},
+  {famId:"They", jp:"彼らは わたしのクラスメートです。",     words:["They","are","my","classmates."]},
+  {famId:"They", jp:"この計画は 彼らのものです。",         words:["This","plan","is","theirs."]}
+];
+
+var PRAISE = ["やったね！","すごい！","その調子！","ナイス！","パーフェクト！","天才かも！","きらり☆","ばっちり！","おみごと！"];
+function randomPraise(){ return PRAISE[Math.floor(Math.random()*PRAISE.length)]; }
+
+var THEMES = [
+  {id:"sakura", name:"さくら", vars:{"--pink":"#FF7BA9","--pink-soft":"#FFE7F0","--lilac":"#A88BEB","--lilac-soft":"#EEE7FE","--lemon":"#FFD166"}, swatch:"linear-gradient(135deg,#FF7BA9,#A88BEB)"},
+  {id:"mint",   name:"ミント", vars:{"--pink":"#3ECFAF","--pink-soft":"#DFF8F1","--lilac":"#5AAEE8","--lilac-soft":"#E4F2FD","--lemon":"#FFD166"}, swatch:"linear-gradient(135deg,#3ECFAF,#5AAEE8)"},
+  {id:"sunset", name:"ゆうやけ", vars:{"--pink":"#FF8A5B","--pink-soft":"#FFEDE2","--lilac":"#E85A8C","--lilac-soft":"#FCE1EB","--lemon":"#FFC94D"}, swatch:"linear-gradient(135deg,#FF8A5B,#E85A8C)"},
+  {id:"grape",  name:"ぶどう", vars:{"--pink":"#9B7BEB","--pink-soft":"#EDE7FE","--lilac":"#6FA8F0","--lilac-soft":"#E4EFFD","--lemon":"#FFD98A"}, swatch:"linear-gradient(135deg,#9B7BEB,#6FA8F0)"}
+];
+
+/* ============ SETTINGS ============ */
+var SET_KEY = "pronounQuest_settings_v2";
+var settings = { bgm:true, bgmVolume:0.5, sfx:true, celebrate:true, theme:"sakura" };
+(function loadSettings(){
+  try{
+    var raw = localStorage.getItem(SET_KEY);
+    if(raw){
+      var p = JSON.parse(raw);
+      if(typeof p.bgm === "boolean") settings.bgm = p.bgm;
+      if(typeof p.bgmVolume === "number") settings.bgmVolume = p.bgmVolume;
+      if(typeof p.sfx === "boolean") settings.sfx = p.sfx;
+      if(typeof p.celebrate === "boolean") settings.celebrate = p.celebrate;
+      if(typeof p.theme === "string") settings.theme = p.theme;
+    }
+  }catch(e){}
+})();
+function saveSettings(){
+  try{ localStorage.setItem(SET_KEY, JSON.stringify(settings)); }catch(e){}
+}
+function applyTheme(){
+  var t = THEMES[0];
+  THEMES.forEach(function(x){ if(x.id === settings.theme) t = x; });
+  Object.keys(t.vars).forEach(function(k){
+    document.documentElement.style.setProperty(k, t.vars[k]);
+  });
+}
+
+/* ============ MASTERY ============ */
+var STORAGE_KEY = "pronounQuest_mastery_v1";
+var mastery = loadMastery();
+var currentView = "learn";
+var quizState = { streak:0, current:null };
+var drillState = { famId:"I", selected:null, filled:{} };
+var drillMode = "table";
+var beDrillState = { placed:{}, selected:null };
+var arrangeState = { q:null, placed:[], bank:[], checked:false };
+
+function loadMastery(){
+  var m = {};
+  FAMILIES.forEach(function(f){ m[f.id] = {correct:0}; });
+  m.beVerb = {rounds:0};
+  m.arrange = {correct:0};
+  m.graduated = false;
+  try{
+    var raw = localStorage.getItem(STORAGE_KEY);
+    if(raw){
+      var p = JSON.parse(raw);
+      Object.keys(p).forEach(function(k){
+        if(k === "beVerb" && p.beVerb){ m.beVerb.rounds = p.beVerb.rounds || 0; }
+        else if(k === "arrange" && p.arrange){ m.arrange.correct = p.arrange.correct || 0; }
+        else if(k === "graduated"){ m.graduated = !!p.graduated; }
+        else if(m[k] && p[k]){ m[k].correct = p[k].correct || 0; }
+      });
+    }
+  }catch(e){}
+  return m;
+}
+function saveMastery(){
+  try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(mastery)); }catch(e){}
+}
+function addCorrect(famId, n){
+  if(!mastery[famId]) mastery[famId] = {correct:0};
+  mastery[famId].correct += n;
+  saveMastery();
+}
+function starsFor(famId){
+  var c = (mastery[famId] && mastery[famId].correct) || 0;
+  if(c >= 10) return 3;
+  if(c >= 6) return 2;
+  if(c >= 3) return 1;
+  return 0;
+}
+function starsForBeVerb(){ return Math.min(3, mastery.beVerb.rounds); }
+function starsForArrange(){
+  var c = mastery.arrange.correct;
+  if(c >= 12) return 3;
+  if(c >= 7) return 2;
+  if(c >= 3) return 1;
+  return 0;
+}
+function totalStars(){
+  var t=0; FAMILIES.forEach(function(f){ t += starsFor(f.id); }); return t;
+}
+function grandTotal(){ return totalStars() + starsForBeVerb() + starsForArrange(); }
+function grandMax(){ return FAMILIES.length*3 + 3 + 3; }
+function checkGraduation(){
+  if(mastery.graduated) return;
+  if(grandTotal() >= grandMax()){
+    mastery.graduated = true;
+    saveMastery();
+    setTimeout(function(){ celebrate("🎓","ぜんぶマスター！ にんめい状 GET！", true); }, 450);
+  }
+}
+
+/* ============ AUDIO ============ */
+var actx = null;
+function ensureAudio(){
+  if(!actx){
+    try{ actx = new (window.AudioContext || window.webkitAudioContext)(); }catch(e){}
+  }
+  if(actx && actx.state === "suspended"){ actx.resume(); }
+}
+function beep(freq, start, dur, type, vol){
+  if(!actx) return;
+  var o = actx.createOscillator();
+  var g = actx.createGain();
+  o.type = type || "sine";
+  o.frequency.value = freq;
+  g.gain.value = 0;
+  o.connect(g); g.connect(actx.destination);
+  var t0 = actx.currentTime + start;
+  g.gain.linearRampToValueAtTime(vol || 0.18, t0 + 0.02);
+  g.gain.linearRampToValueAtTime(0.0001, t0 + dur);
+  o.start(t0);
+  o.stop(t0 + dur + 0.02);
+}
+function playCorrect(){
+  if(!settings.sfx) return;
+  ensureAudio();
+  beep(523.25, 0, 0.12, "sine", 0.2);
+  beep(659.25, 0.1, 0.12, "sine", 0.2);
+  beep(783.99, 0.2, 0.18, "sine", 0.22);
+}
+function playWrong(){
+  if(!settings.sfx) return;
+  ensureAudio();
+  beep(200, 0, 0.18, "sawtooth", 0.11);
+}
+function playStamp(){
+  if(!settings.sfx) return;
+  ensureAudio();
+  beep(880, 0, 0.08, "square", 0.14);
+  beep(1046.5, 0.08, 0.14, "square", 0.14);
+  beep(1318.5, 0.18, 0.2, "square", 0.12);
+}
+function playTap(){
+  if(!settings.sfx) return;
+  ensureAudio();
+  beep(620, 0, 0.05, "sine", 0.07);
+}
+
+/* ============ BGM ============ */
+var bgmTimer = null, bgmRunning = false, bgmIndex = 0, audioUnlocked = false;
+var BGM_NOTES = [523.25,587.33,659.25,783.99,880.00,783.99,659.25,587.33,523.25,659.25,783.99,659.25];
+var BGM_BASS  = [261.63,null,329.63,null,392.00,null,329.63,null,261.63,null,392.00,null];
+function bgmStep(){
+  if(!settings.bgm){ bgmRunning = false; return; }
+  bgmRunning = true;
+  if(actx && actx.state === "running"){
+    var v = 0.05 * settings.bgmVolume * 2;
+    beep(BGM_NOTES[bgmIndex % BGM_NOTES.length], 0, 0.5, "sine", v);
+    var b = BGM_BASS[bgmIndex % BGM_BASS.length];
+    if(b){ beep(b, 0, 0.45, "triangle", v*0.55); }
+  }
+  bgmIndex++;
+  bgmTimer = setTimeout(bgmStep, 430);
+}
+function startBgm(){
+  settings.bgm = true; saveSettings();
+  ensureAudio();
+  clearTimeout(bgmTimer); bgmRunning = false;
+  bgmStep();
+  updateBgmButton();
+}
+function stopBgm(){
+  settings.bgm = false; saveSettings();
+  clearTimeout(bgmTimer); bgmRunning = false;
+  updateBgmButton();
+}
+function updateBgmButton(){
+  var b = document.getElementById("bgmBtn");
+  if(!b) return;
+  b.textContent = settings.bgm ? "🎵" : "🔇";
+  b.classList.toggle("on", settings.bgm);
+}
+function showAudioHint(){
+  if(document.getElementById("audioHint")) return;
+  var el = document.createElement("div");
+  el.id = "audioHint";
+  el.textContent = "タップして音楽スタート 🎵";
+  document.body.appendChild(el);
+}
+function hideAudioHint(){
+  var el = document.getElementById("audioHint");
+  if(el) el.remove();
+}
+function unlockAudio(){
+  if(audioUnlocked) return;
+  audioUnlocked = true;
+  ensureAudio();
+  hideAudioHint();
+  if(settings.bgm && !bgmRunning){ bgmStep(); }
+}
+
+/* ============ TOAST / CONFETTI / CELEBRATE ============ */
+var toastTimer = null;
+function showToast(msg){
+  var t = document.getElementById("toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(function(){ t.classList.remove("show"); }, 1400);
+}
+var CONFETTI_EMOJI = ["✨","🎉","⭐","🌟","💮","🎊","🩷"];
+function burstConfetti(x, y, count){
+  if(!settings.celebrate) return;
+  count = count || 6;
+  for(var i=0;i<count;i++){
+    (function(i){
+      var el = document.createElement("div");
+      el.className = "confetti";
+      el.textContent = CONFETTI_EMOJI[i % CONFETTI_EMOJI.length];
+      el.style.left = (x + (Math.random()*74-37)) + "px";
+      el.style.top = (y + (Math.random()*14-7)) + "px";
+      document.body.appendChild(el);
+      setTimeout(function(){ el.remove(); }, 980);
+    })(i);
+  }
+}
+var celebrateTimer = null;
+function celebrate(emoji, msg, big){
+  if(!settings.celebrate){ showToast(msg); return; }
+  var overlay = document.getElementById("celebrateOverlay");
+  overlay.innerHTML = '<div class="celebrate-card"><div class="emoji">'+emoji+'</div><div class="msg">'+msg+'</div></div>';
+  overlay.classList.add("show");
+  playStamp();
+  burstConfetti(window.innerWidth/2, window.innerHeight/2, big ? 22 : 10);
+  clearTimeout(celebrateTimer);
+  celebrateTimer = setTimeout(function(){ overlay.classList.remove("show"); }, big ? 2200 : 1500);
+}
+
+/* ============ HELPERS ============ */
+function familyById(id){ var r=null; FAMILIES.forEach(function(f){ if(f.id===id) r=f; }); return r; }
+function formByKey(fam, key){ var r=null; fam.forms.forEach(function(fo){ if(fo.key===key) r=fo; }); return r; }
+function shuffle(arr){
+  var a = arr.slice();
+  for(var i=a.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); var t=a[i]; a[i]=a[j]; a[j]=t; }
+  return a;
+}
+function starRow(n){ return "★".repeat(n) + "☆".repeat(3-n); }
+function awardFamily(fam, srcEl){
+  var prev = starsFor(fam.id);
+  addCorrect(fam.id, 1);
+  var now = starsFor(fam.id);
+  renderPassport();
+  if(srcEl){ var r = srcEl.getBoundingClientRect(); burstConfetti(r.left+r.width/2, r.top); }
+  if(now > prev){
+    setTimeout(function(){
+      celebrate(fam.emoji, fam.name+" ★"+now+" たっせい！", now===3);
+      checkGraduation();
+    }, 250);
+  }
+  return now > prev;
+}
+
+/* ============ PASSPORT ============ */
+function renderPassport(){
+  var bar = document.getElementById("passportBar");
+  bar.innerHTML = "";
+  FAMILIES.forEach(function(f){
+    var s = starsFor(f.id);
+    var wrap = document.createElement("div");
+    wrap.className = "stamp" + (s>0 ? " active" : "") + (s===3 ? " full" : "");
+    wrap.style.setProperty("--fam-color", f.color);
+    wrap.innerHTML =
+      '<div class="circ">'+f.emoji+'</div>' +
+      '<div class="stars">'+(s>0 ? starRow(s) : "")+'</div>' +
+      '<div class="nm">'+f.name+'</div>';
+    bar.appendChild(wrap);
+  });
+}
+
+/* ============ LEARN ============ */
+function renderLearn(){
+  var list = document.getElementById("learnList");
+  list.innerHTML = "";
+  FAMILIES.forEach(function(f){
+    var card = document.createElement("div");
+    card.className = "fam-card";
+    card.style.setProperty("--fam-color", f.color);
+    card.style.setProperty("--fam-bg", f.bg);
+
+    var head = document.createElement("div");
+    head.className = "fam-head";
+    head.innerHTML =
+      '<div class="fam-emoji" style="background:'+f.bg+'">'+f.emoji+'</div>' +
+      '<div class="fam-title"><b>'+f.name+'</b><span>'+f.sub+'<span class="be-pill">be: '+f.be+'</span></span></div>' +
+      '<div class="fam-arrow">▾</div>';
+    head.addEventListener("click", function(){ playTap(); card.classList.toggle("open"); });
+
+    var body = document.createElement("div");
+    body.className = "fam-body";
+    f.forms.forEach(function(form){
+      var row = document.createElement("div");
+      row.className = "form-row";
+      row.innerHTML =
+        '<div class="form-en">'+form.en+'</div>' +
+        '<div class="form-meta"><div class="form-label">'+form.label+'</div>' +
+        '<div class="form-ex"><b>'+form.full+'</b><br>'+form.jp+'</div></div>';
+      body.appendChild(row);
+    });
+    if(f.id === "It"){
+      var note = document.createElement("div");
+      note.style.cssText = "font-size:11px;color:#ADA8C6;margin-top:8px;";
+      note.textContent = "※「もの・こと」には所有代名詞(〜のもの)の形はありません。";
+      body.appendChild(note);
+    }
+    card.appendChild(head); card.appendChild(body);
+    list.appendChild(card);
+  });
+}
+
+/* ============ OVERVIEW ============ */
+function renderOverview(){
+  var wrap = document.getElementById("overviewWrap");
+  var groupCounts = {};
+  OVERVIEW_ROWS.forEach(function(r){ groupCounts[r.group] = (groupCounts[r.group]||0)+1; });
+  var printed = {}, rowsHtml = "";
+  OVERVIEW_ROWS.forEach(function(r){
+    var fam = familyById(r.famId);
+    var subj = formByKey(fam,"subject"), poss = formByKey(fam,"possessive");
+    var obj = formByKey(fam,"object"), pron = formByKey(fam,"possessivePronoun");
+    var g = "";
+    if(!printed[r.group]){ g = '<td class="group-cell" rowspan="'+groupCounts[r.group]+'">'+r.group+'</td>'; printed[r.group]=true; }
+    rowsHtml += "<tr>"+g+
+      "<td>"+r.person+"</td>"+
+      '<td class="jp-cell">'+(r.nameOverride||fam.name)+"</td>"+
+      '<td class="be-cell">'+fam.be+"</td>"+
+      '<td class="en-cell">'+subj.en+"</td>"+
+      '<td class="en-cell">'+poss.en+"</td>"+
+      '<td class="en-cell">'+obj.en+"</td>"+
+      '<td class="en-cell">'+(pron ? pron.en : "－")+"</td></tr>";
+  });
+  wrap.innerHTML =
+    '<div class="overview-scroll"><table class="overview-table"><thead><tr>' +
+    "<th></th><th>人称</th><th>日本語</th><th>be動詞</th><th>〜は・が</th><th>〜の</th><th>〜を・に</th><th>〜のもの</th>" +
+    "</tr></thead><tbody>"+rowsHtml+"</tbody></table></div>" +
+    '<div style="font-size:11px;color:#ADA8C6;margin-top:10px;text-align:center;">よこにスクロールできます　※「それ(it)」に「〜のもの」の形はありません</div>';
+}
+
+/* ============ QUIZ ============ */
+var ALL_WORDS = [];
+(function(){
+  var seen = {};
+  FAMILIES.forEach(function(f){ f.forms.forEach(function(fo){ if(!seen[fo.en]){seen[fo.en]=1; ALL_WORDS.push(fo.en);} }); });
+})();
+function pickQuestion(){
+  var f = FAMILIES[Math.floor(Math.random()*FAMILIES.length)];
+  var form = f.forms[Math.floor(Math.random()*f.forms.length)];
+  var d = shuffle(ALL_WORDS.filter(function(w){ return w !== form.en; })).slice(0,3);
+  return { fam:f, form:form, options:shuffle([form.en].concat(d)) };
+}
+function renderQuiz(){
+  quizState.current = pickQuestion();
+  var f = quizState.current.fam, form = quizState.current.form;
+  var qcard = document.getElementById("qcard");
+  qcard.style.setProperty("--fam-color", f.color);
+  qcard.style.setProperty("--fam-bg", f.bg);
+  qcard.innerHTML =
+    '<div class="qtag">'+f.emoji+' '+f.name+' の '+form.label+'</div>' +
+    '<div class="qjp">'+form.jp+'</div>' +
+    '<div class="qsentence">'+form.blank.replace("___",'<span class="blank">＿＿＿</span>')+'</div>' +
+    '<div class="options" id="optWrap"></div>' +
+    '<div class="feedback-line" id="feedback"></div>' +
+    '<div class="next-wrap" id="nextWrap"></div>';
+  var optWrap = document.getElementById("optWrap");
+  quizState.current.options.forEach(function(word){
+    var btn = document.createElement("button");
+    btn.className = "opt-btn";
+    btn.textContent = word;
+    btn.addEventListener("click", function(){ handleAnswer(word, btn); });
+    optWrap.appendChild(btn);
+  });
+  updateStreakLabel();
+}
+function updateStreakLabel(){
+  var fire = quizState.streak >= 5 ? " 🔥" : "";
+  document.getElementById("streakLabel").textContent = "れんぞく正解 "+quizState.streak+fire;
+}
+function handleAnswer(word, btnEl){
+  var form = quizState.current.form, fam = quizState.current.fam;
+  var correct = (word === form.en);
+  document.querySelectorAll("#optWrap .opt-btn").forEach(function(b){
+    b.disabled = true;
+    if(b.textContent === form.en) b.classList.add("correct");
+  });
+  var fb = document.getElementById("feedback");
+  if(correct){
+    quizState.streak += 1;
+    playCorrect();
+    fb.className = "feedback-line ok";
+    fb.textContent = randomPraise()+" 「"+form.full+"」";
+    awardFamily(fam, btnEl);
+    if(quizState.streak === 5){ setTimeout(function(){ showToast("5れんぞく！ 火がついた🔥"); }, 700); }
+    if(quizState.streak === 10){ setTimeout(function(){ celebrate("🔥","10れんぞく正解！すごい！", true); }, 700); }
+  } else {
+    quizState.streak = 0;
+    btnEl.classList.add("wrong");
+    playWrong();
+    fb.className = "feedback-line ng";
+    fb.textContent = "おしい！ 正解は 「"+form.en+"」でした。";
+  }
+  updateStreakLabel();
+  var nw = document.getElementById("nextWrap");
+  var nb = document.createElement("button");
+  nb.className = "btn-next";
+  nb.textContent = "つぎの問題へ →";
+  nb.addEventListener("click", function(){ playTap(); renderQuiz(); });
+  nw.innerHTML = ""; nw.appendChild(nb);
+}
+
+/* ============ DRILL MODES ============ */
+var DRILL_MODES = [
+  {id:"table",   label:"① 表を完成"},
+  {id:"beverb",  label:"② be動詞"},
+  {id:"arrange", label:"③ 並べ替え"}
+];
+function renderDrillModeToggle(){
+  var wrap = document.getElementById("drillModeToggle");
+  wrap.innerHTML = "";
+  DRILL_MODES.forEach(function(m){
+    var b = document.createElement("button");
+    b.className = "mode-btn" + (drillMode === m.id ? " active" : "");
+    b.textContent = m.label;
+    b.addEventListener("click", function(){
+      playTap(); drillMode = m.id;
+      renderDrillModeToggle(); renderDrillBody();
+    });
+    wrap.appendChild(b);
+  });
+}
+function renderDrillBody(){
+  var body = document.getElementById("drillBody");
+  if(drillMode === "table"){
+    body.innerHTML = '<div class="chip-row" id="drillChips"></div><div class="drill-table" id="drillTable"></div>';
+    renderDrillChips(); renderDrillTable();
+  } else if(drillMode === "beverb"){
+    body.innerHTML = '<div id="beverbArea"></div>';
+    renderBeDrill();
+  } else {
+    body.innerHTML = '<div id="arrangeArea"></div>';
+    newArrangeQuestion();
+  }
+}
+
+/* ---- Drill 1: table ---- */
+function renderDrillChips(){
+  var wrap = document.getElementById("drillChips");
+  wrap.innerHTML = "";
+  FAMILIES.forEach(function(f){
+    var chip = document.createElement("div");
+    chip.className = "chip" + (drillState.famId === f.id ? " active" : "");
+    chip.style.setProperty("--fam-color", f.color);
+    chip.style.setProperty("--fam-bg", f.bg);
+    chip.innerHTML = '<span>'+f.emoji+'</span><span>'+f.name+'</span>';
+    chip.addEventListener("click", function(){
+      playTap();
+      drillState.famId = f.id; drillState.selected = null; drillState.filled = {};
+      renderDrillChips(); renderDrillTable();
+    });
+    wrap.appendChild(chip);
+  });
+}
+function renderDrillTable(){
+  var fam = familyById(drillState.famId);
+  var table = document.getElementById("drillTable");
+  table.style.setProperty("--fam-color", fam.color);
+  var allDone = fam.forms.every(function(fo){ return drillState.filled[fo.key]; });
+  if(allDone){
+    table.innerHTML =
+      '<div class="drill-done"><div class="big">🎉</div>' +
+      '<div style="font-weight:800;margin:8px 0;">'+fam.emoji+' '+fam.name+' コンプリート！</div>' +
+      '<div style="font-size:12px;color:#ADA8C6;">ほかのなかまにも挑戦してみよう</div></div>';
+    return;
+  }
+  var html = "";
+  fam.forms.forEach(function(fo){
+    var filled = drillState.filled[fo.key], sel = drillState.selected === fo.key;
+    html += '<div class="drill-row"><div class="drill-label">'+FORM_ROW_LABEL[fo.key]+'</div>' +
+      '<div class="drill-blank'+(filled?" filled":(sel?" selected":""))+'" data-key="'+fo.key+'">'+
+      (filled ? fo.en : (sel ? "？" : ""))+'</div></div>';
+  });
+  table.innerHTML = html;
+  table.querySelectorAll(".drill-blank").forEach(function(el){
+    el.addEventListener("click", function(){
+      var key = el.getAttribute("data-key");
+      if(drillState.filled[key]) return;
+      playTap(); drillState.selected = key;
+      renderDrillTable(); renderDrillChoices();
+    });
+  });
+  renderDrillChoices();
+}
+function renderDrillChoices(){
+  var fam = familyById(drillState.famId);
+  var old = document.getElementById("drillChoices");
+  if(old) old.remove();
+  if(!drillState.selected) return;
+  var wrap = document.createElement("div");
+  wrap.className = "drill-choices"; wrap.id = "drillChoices";
+  shuffle(fam.forms.map(function(f){ return f.en; })).forEach(function(word){
+    var b = document.createElement("button");
+    b.className = "dchoice"; b.textContent = word;
+    b.addEventListener("click", function(){
+      var target = formByKey(fam, drillState.selected);
+      if(word === target.en){
+        drillState.filled[target.key] = true;
+        drillState.selected = null;
+        playCorrect();
+        awardFamily(fam, b);
+        showToast(randomPraise());
+        renderDrillTable();
+      } else {
+        playWrong();
+        var t = document.getElementById("drillTable");
+        t.classList.add("shake");
+        setTimeout(function(){ t.classList.remove("shake"); }, 350);
+      }
+    });
+    wrap.appendChild(b);
+  });
+  document.getElementById("drillTable").appendChild(wrap);
+}
+
+/* ---- Drill 2: be-verb baskets ---- */
+function renderBeDrill(){
+  var area = document.getElementById("beverbArea");
+  var remaining = BEVERB_ITEMS.filter(function(it){ return !beDrillState.placed[it.id]; });
+  var stars = starsForBeVerb();
+  var header =
+    '<div class="card" style="text-align:center;padding:14px;">' +
+      '<div style="font-size:13px;color:#7C76A0;font-weight:700;">be動詞とセットでおぼえよう(am / is / are)</div>' +
+      '<div style="font-size:11px;color:#ADA8C6;margin-top:5px;">クリア '+mastery.beVerb.rounds+'回　'+starRow(stars)+'</div>' +
+    '</div>';
+  if(remaining.length === 0){
+    area.innerHTML = header +
+      '<div class="card drill-done"><div class="big">🎉</div>' +
+      '<div style="font-weight:800;margin:8px 0;">be動詞パーフェクト！</div>' +
+      '<button class="btn-next" id="beRetryBtn">もう一度あそぶ →</button></div>';
+    document.getElementById("beRetryBtn").addEventListener("click", function(){
+      playTap(); beDrillState.placed = {}; beDrillState.selected = null; renderBeDrill();
+    });
+    return;
+  }
+  var chips = '<div class="chip-row">';
+  remaining.forEach(function(it){
+    chips += '<div class="chip'+(beDrillState.selected===it.id?" active":"")+'" data-id="'+it.id+
+      '" style="--fam-color:'+it.color+';--fam-bg:'+it.bg+';"><span>'+it.emoji+'</span><span>'+it.label+'</span></div>';
+  });
+  chips += '</div>';
+  var baskets = '<div class="basket-row">';
+  ["am","is","are"].forEach(function(bv){
+    var tags = BEVERB_ITEMS.filter(function(it){ return beDrillState.placed[it.id]===bv; }).map(function(it){
+      return '<span class="basket-tag" style="background:'+it.bg+';color:'+it.color+';">'+it.emoji+' '+it.label+'</span>';
+    }).join("");
+    baskets += '<div class="basket" data-be="'+bv+'"><div class="basket-label">'+bv+'</div><div class="basket-items">'+tags+'</div></div>';
+  });
+  baskets += '</div>';
+  area.innerHTML = header +
+    '<div class="card"><div style="font-size:11.5px;color:#ADA8C6;margin-bottom:8px;">①なかまをタップ → ②正しいbe動詞のカゴをタップ</div>' +
+    chips + baskets + '</div>';
+  area.querySelectorAll(".chip").forEach(function(el){
+    el.addEventListener("click", function(){
+      playTap(); beDrillState.selected = el.getAttribute("data-id"); renderBeDrill();
+    });
+  });
+  area.querySelectorAll(".basket").forEach(function(el){
+    el.addEventListener("click", function(){ onBasketTap(el.getAttribute("data-be"), el); });
+  });
+}
+function onBasketTap(basket, el){
+  if(!beDrillState.selected) return;
+  var item = null;
+  BEVERB_ITEMS.forEach(function(it){ if(it.id === beDrillState.selected) item = it; });
+  if(!item) return;
+  if(item.be === basket){
+    beDrillState.placed[item.id] = basket;
+    beDrillState.selected = null;
+    playCorrect();
+    var r = el.getBoundingClientRect();
+    burstConfetti(r.left+r.width/2, r.top);
+    renderBeDrill();
+    if(BEVERB_ITEMS.filter(function(it){ return !beDrillState.placed[it.id]; }).length === 0){
+      var prev = starsForBeVerb();
+      mastery.beVerb.rounds += 1; saveMastery();
+      var now = starsForBeVerb();
+      setTimeout(function(){
+        celebrate("🔤", randomPraise()+" be動詞クリア！("+mastery.beVerb.rounds+"回目)", now>prev);
+        checkGraduation();
+      }, 250);
+    }
+  } else {
+    playWrong();
+    el.classList.add("shake");
+    setTimeout(function(){ el.classList.remove("shake"); }, 350);
+  }
+}
+
+/* ---- Drill 3: arrange (word order) ---- */
+function newArrangeQuestion(){
+  var q = ARRANGE_Q[Math.floor(Math.random()*ARRANGE_Q.length)];
+  arrangeState.q = q;
+  arrangeState.placed = [];
+  arrangeState.bank = shuffle(q.words.map(function(w,i){ return {w:w, i:i}; }));
+  arrangeState.checked = false;
+  renderArrange();
+}
+function renderArrange(){
+  var area = document.getElementById("arrangeArea");
+  if(!area) return;
+  var q = arrangeState.q;
+  var fam = familyById(q.famId);
+  var stars = starsForArrange();
+
+  var slotHtml = "";
+  if(arrangeState.placed.length === 0){
+    slotHtml = '<span class="placeholder">下のことばをタップして 文をつくろう</span>';
+  } else {
+    arrangeState.placed.forEach(function(tok, idx){
+      slotHtml += '<button class="word-tile placed" data-slot="'+idx+'">'+tok.w+'</button>';
+    });
+  }
+  var bankHtml = "";
+  arrangeState.bank.forEach(function(tok, idx){
+    var used = arrangeState.placed.some(function(p){ return p.i === tok.i; });
+    bankHtml += '<button class="word-tile" data-bank="'+idx+'"'+(used?" disabled":"")+'>'+tok.w+'</button>';
+  });
+
+  var complete = arrangeState.placed.length === q.words.length;
+
+  area.innerHTML =
+    '<div class="card" style="text-align:center;padding:14px;">' +
+      '<div style="font-size:13px;color:#7C76A0;font-weight:700;">日本語にあう英文を つくろう</div>' +
+      '<div style="font-size:11px;color:#ADA8C6;margin-top:5px;">せいかい '+mastery.arrange.correct+'問　'+starRow(stars)+'</div>' +
+    '</div>' +
+    '<div class="card" style="--fam-color:'+fam.color+';">' +
+      '<div style="text-align:center;">' +
+        '<span class="qtag" style="background:'+fam.bg+';color:'+fam.color+';display:inline-block;font-size:11px;padding:5px 12px;border-radius:999px;font-weight:700;">'+fam.emoji+' '+fam.name+'</span>' +
+        '<div style="font-size:14.5px;font-weight:800;margin-top:10px;line-height:1.6;">'+q.jp+'</div>' +
+      '</div>' +
+      '<div class="arrange-slot'+(arrangeState.checked?" done":"")+'" id="arrangeSlot">'+slotHtml+'</div>' +
+      '<div class="word-bank">'+bankHtml+'</div>' +
+      '<div class="feedback-line" id="arrangeFeedback" style="text-align:center;"></div>' +
+      '<div class="arrange-actions">' +
+        '<button class="btn-ghost" id="arrangeClear">やりなおす</button>' +
+        (arrangeState.checked
+          ? '<button class="btn-solid" id="arrangeNext">つぎの問題へ →</button>'
+          : '<button class="btn-solid" id="arrangeCheck"'+(complete?"":" disabled style=\"opacity:.45\"")+'>こたえあわせ</button>') +
+      '</div>' +
+    '</div>';
+
+  area.querySelectorAll("[data-bank]").forEach(function(btn){
+    btn.addEventListener("click", function(){
+      if(arrangeState.checked || btn.disabled) return;
+      playTap();
+      arrangeState.placed.push(arrangeState.bank[parseInt(btn.getAttribute("data-bank"),10)]);
+      renderArrange();
+    });
+  });
+  area.querySelectorAll("[data-slot]").forEach(function(btn){
+    btn.addEventListener("click", function(){
+      if(arrangeState.checked) return;
+      playTap();
+      arrangeState.placed.splice(parseInt(btn.getAttribute("data-slot"),10), 1);
+      renderArrange();
+    });
+  });
+  var clearBtn = document.getElementById("arrangeClear");
+  if(clearBtn) clearBtn.addEventListener("click", function(){
+    playTap(); arrangeState.placed = []; arrangeState.checked = false; renderArrange();
+  });
+  var checkBtn = document.getElementById("arrangeCheck");
+  if(checkBtn) checkBtn.addEventListener("click", function(){ checkArrange(checkBtn); });
+  var nextBtn = document.getElementById("arrangeNext");
+  if(nextBtn) nextBtn.addEventListener("click", function(){ playTap(); newArrangeQuestion(); });
+}
+function checkArrange(btnEl){
+  var q = arrangeState.q;
+  var made = arrangeState.placed.map(function(t){ return t.w; }).join(" ");
+  var answer = q.words.join(" ");
+  var fb = document.getElementById("arrangeFeedback");
+  if(made === answer){
+    arrangeState.checked = true;
+    mastery.arrange.correct += 1;
+    var prev = starsForArrange();
+    saveMastery();
+    var now = starsForArrange();
+    playCorrect();
+    var fam = familyById(q.famId);
+    awardFamily(fam, btnEl);
+    renderArrange();
+    var fb2 = document.getElementById("arrangeFeedback");
+    fb2.className = "feedback-line ok";
+    fb2.textContent = randomPraise()+" "+answer;
+    if(now > prev){
+      setTimeout(function(){
+        celebrate("🧩", "並べ替え ★"+now+" たっせい！", now===3);
+        checkGraduation();
+      }, 400);
+    }
+  } else {
+    playWrong();
+    fb.className = "feedback-line ng";
+    fb.textContent = "うーん、じゅんばんがちがうみたい。もう一度！";
+    var slot = document.getElementById("arrangeSlot");
+    slot.classList.add("shake");
+    setTimeout(function(){ slot.classList.remove("shake"); }, 350);
+  }
+}
+
+/* ============ ZUKAN ============ */
+function renderZukan(){
+  var gt = grandTotal(), gm = grandMax();
+  document.getElementById("starTotal").textContent = gt+" / "+gm;
+  document.getElementById("progressFill").style.width = Math.round(gt/gm*100)+"%";
+  var grid = document.getElementById("zukanGrid");
+  grid.innerHTML = "";
+  FAMILIES.forEach(function(f){
+    var s = starsFor(f.id);
+    var c = (mastery[f.id] && mastery[f.id].correct) || 0;
+    var card = document.createElement("div");
+    card.className = "zcard" + (s>0 ? " on" : "");
+    card.style.setProperty("--fam-bg", f.bg);
+    card.innerHTML = '<div class="zemoji">'+f.emoji+'</div><div class="zname">'+f.name+
+      '</div><div class="zstars">'+starRow(s)+'</div><div class="zcount">せいかい '+c+' 回</div>';
+    grid.appendChild(card);
+  });
+  var extras = [
+    {emoji:"🔤", name:"be動詞", bg:"#EEE7FE", stars:starsForBeVerb(), count:"クリア "+mastery.beVerb.rounds+" 回"},
+    {emoji:"🧩", name:"並べ替え", bg:"#DFF8F1", stars:starsForArrange(), count:"せいかい "+mastery.arrange.correct+" 問"}
+  ];
+  extras.forEach(function(e){
+    var card = document.createElement("div");
+    card.className = "zcard" + (e.stars>0 ? " on" : "");
+    card.style.setProperty("--fam-bg", e.bg);
+    card.innerHTML = '<div class="zemoji">'+e.emoji+'</div><div class="zname">'+e.name+
+      '</div><div class="zstars">'+starRow(e.stars)+'</div><div class="zcount">'+e.count+'</div>';
+    grid.appendChild(card);
+  });
+}
+
+/* ============ SETTINGS UI ============ */
+function renderSettings(){
+  var card = document.getElementById("settingsCard");
+  card.innerHTML =
+    '<div class="set-row">' +
+      '<div class="set-ic" style="background:#FFE7F0;">🎵</div>' +
+      '<div class="set-meta"><b>BGM</b><span>やさしいループ音楽を流します</span></div>' +
+      '<button class="switch'+(settings.bgm?" on":"")+'" id="swBgm"></button>' +
+    '</div>' +
+    '<div class="set-row">' +
+      '<div class="set-ic" style="background:#EEE7FE;">🔊</div>' +
+      '<div class="set-meta"><b>BGMの音量</b><span>ちいさく〜おおきく</span></div>' +
+      '<input type="range" id="rgVol" min="0" max="1" step="0.05" value="'+settings.bgmVolume+'">' +
+    '</div>' +
+    '<div class="set-row">' +
+      '<div class="set-ic" style="background:#DFF8F1;">🔔</div>' +
+      '<div class="set-meta"><b>こうか音</b><span>正解・まちがいの音</span></div>' +
+      '<button class="switch'+(settings.sfx?" on":"")+'" id="swSfx"></button>' +
+    '</div>' +
+    '<div class="set-row">' +
+      '<div class="set-ic" style="background:#FFF6DC;">🎉</div>' +
+      '<div class="set-meta"><b>おいわい演出</b><span>紙ふぶきとポップアップ</span></div>' +
+      '<button class="switch'+(settings.celebrate?" on":"")+'" id="swCel"></button>' +
+    '</div>';
+
+  document.getElementById("swBgm").addEventListener("click", function(){
+    if(settings.bgm){ stopBgm(); } else { startBgm(); }
+    renderSettings();
+  });
+  document.getElementById("swSfx").addEventListener("click", function(){
+    settings.sfx = !settings.sfx; saveSettings(); playTap(); renderSettings();
+  });
+  document.getElementById("swCel").addEventListener("click", function(){
+    settings.celebrate = !settings.celebrate; saveSettings(); playTap(); renderSettings();
+  });
+  var vol = document.getElementById("rgVol");
+  vol.addEventListener("input", function(){
+    settings.bgmVolume = parseFloat(vol.value); saveSettings();
+  });
+
+  var row = document.getElementById("themeRow");
+  row.innerHTML = "";
+  THEMES.forEach(function(t){
+    var sw = document.createElement("div");
+    sw.className = "theme-swatch" + (settings.theme === t.id ? " active" : "");
+    sw.style.background = t.swatch;
+    sw.textContent = t.name;
+    sw.addEventListener("click", function(){
+      playTap();
+      settings.theme = t.id; saveSettings(); applyTheme();
+      renderSettings(); renderPassport();
+      showToast(t.name+"テーマに変えました");
+    });
+    row.appendChild(sw);
+  });
+}
+
+/* ============ NAV ============ */
+function switchView(name){
+  currentView = name;
+  document.querySelectorAll(".view").forEach(function(v){ v.classList.remove("active"); });
+  document.getElementById("view-"+name).classList.add("active");
+  document.querySelectorAll(".tab-btn").forEach(function(b){
+    b.classList.toggle("active", b.getAttribute("data-view") === name);
+  });
+  if(name === "overview") renderOverview();
+  if(name === "quiz") renderQuiz();
+  if(name === "drill"){ renderDrillModeToggle(); renderDrillBody(); }
+  if(name === "zukan") renderZukan();
+  if(name === "settings") renderSettings();
+  window.scrollTo(0,0);
+}
+document.querySelectorAll(".tab-btn").forEach(function(btn){
+  btn.addEventListener("click", function(){ playTap(); switchView(btn.getAttribute("data-view")); });
+});
+document.getElementById("settingsBtn").addEventListener("click", function(){
+  playTap();
+  switchView(currentView === "settings" ? "learn" : "settings");
+});
+document.getElementById("bgmBtn").addEventListener("click", function(){
+  if(settings.bgm){ stopBgm(); showToast("BGMをとめました"); }
+  else { startBgm(); showToast("BGMをながします 🎵"); }
+  if(currentView === "settings") renderSettings();
+});
+document.getElementById("resetBtn").addEventListener("click", function(){
+  if(confirm("きろくをぜんぶリセットしますか？")){
+    mastery = {};
+    FAMILIES.forEach(function(f){ mastery[f.id] = {correct:0}; });
+    mastery.beVerb = {rounds:0};
+    mastery.arrange = {correct:0};
+    mastery.graduated = false;
+    saveMastery();
+    renderPassport();
+    showToast("きろくをリセットしました");
+  }
+});
+document.addEventListener("click", unlockAudio, true);
+document.addEventListener("touchstart", unlockAudio, true);
+
+/* ============ INIT ============ */
+applyTheme();
+renderPassport();
+renderLearn();
+updateBgmButton();
+switchView("learn");
+ensureAudio();
+setTimeout(function(){
+  if(settings.bgm && actx && actx.state === "running"){ if(!bgmRunning) bgmStep(); }
+  else if(settings.bgm){ showAudioHint(); }
+}, 300);
+setTimeout(function(){ showToast("今日もいっしょにがんばろう！✨"); }, 700);
+
+})();
+</script>
+</body>
+</html>
