@@ -198,7 +198,30 @@
   .example{background:white; border-left:4px solid var(--teal-dark); padding:6px 10px; margin:6px 0; font-size:0.85rem; border-radius:0 8px 8px 0;}
   .mnemonic{background:var(--yellow); border-radius:10px; padding:10px 12px; text-align:center; font-weight:bold; color:var(--coral-dark); font-size:0.95rem; margin:10px 0;}
 
-  .modal-overlay{
+  .timer-wrap{
+    display:flex; align-items:center; gap:10px; background:white; border:2px solid var(--teal-dark);
+    border-radius:14px; padding:8px 12px; margin-bottom:10px;
+  }
+  .timer-num{font-size:1.5rem; font-weight:bold; color:var(--teal-deep); min-width:70px; text-align:center; font-variant-numeric:tabular-nums;}
+  .timer-track{flex:1; height:12px; background:#eee; border-radius:8px; overflow:hidden;}
+  .timer-fill{height:100%; background:var(--teal-dark); width:100%; transition:width .9s linear;}
+  .timer-wrap.warn{border-color:var(--coral); animation:pulse .6s infinite alternate;}
+  .timer-wrap.warn .timer-num{color:var(--coral);}
+  .timer-wrap.warn .timer-fill{background:var(--coral);}
+  @keyframes pulse{ from{background:white;} to{background:#fff0ee;} }
+  @media (prefers-reduced-motion: reduce){ .timer-wrap.warn{animation:none;} .timer-fill{transition:none;} }
+
+  .start-overlay{
+    position:fixed; inset:0; background:rgba(42,90,90,0.85); z-index:60;
+    display:flex; flex-direction:column; align-items:center; justify-content:center; padding:24px; text-align:center;
+  }
+  .start-overlay h3{color:white; font-size:1.4rem; margin:0 0 6px;}
+  .start-overlay p{color:#dff3f3; font-size:0.9rem; margin:0 0 22px; line-height:1.7;}
+  .start-btn{
+    background:var(--coral); color:white; border:none; border-radius:40px; padding:18px 46px;
+    font-size:1.3rem; font-weight:bold; font-family:inherit; box-shadow:0 6px 0 rgba(0,0,0,0.2);
+  }
+  .start-btn:active{transform:translateY(3px); box-shadow:none;}
     position:fixed; inset:0; background:rgba(0,0,0,0.4); display:flex; align-items:center; justify-content:center;
     z-index:50; padding:20px;
   }
@@ -439,15 +462,14 @@ function buildTableBlanks(){
 buildTableBlanks();
 
 screens.table = function(){
-  stats.table.plays = (stats.table.plays||0)+1; saveStats(stats);
   app.innerHTML = `
     <button class="back-btn" id="backBtn">← もどる</button>
     <div class="card">
-      <h2 class="section-title">表をうめよう</h2>
-      <p style="font-size:0.8rem;color:#666;margin-top:-4px;line-height:1.6;">
-        下のことばのボタンをタップして空らんをうめよう。<br>
-        入れた場所をもう一度タップすると取り消せるよ。使わないダミーも混ざっているので気をつけて！
-      </p>
+      <h2 class="section-title">表をうめよう <span style="font-size:0.8rem;color:#c1392c;">⏱ タイムアタック 60秒</span></h2>
+      <div class="timer-wrap" id="timerWrap">
+        <div class="timer-num" id="timerNum">60.0</div>
+        <div class="timer-track"><div class="timer-fill" id="timerFill"></div></div>
+      </div>
       <div style="overflow-x:auto;">
         <table class="pronoun-table" id="fillTable">
           <thead>
@@ -466,27 +488,114 @@ screens.table = function(){
         <div class="action-row">
           <button class="pill-btn" id="gradeBtn">✅ こたえ合わせ</button>
           <button class="pill-btn secondary" id="clearBtn">↩︎ ぜんぶ消す</button>
-          <button class="pill-btn coral" id="reshuffleBtn">🔄 新しい空らん</button>
+          <button class="pill-btn coral" id="reshuffleBtn">🔄 もう一度</button>
         </div>
       </div>
     </div>
+    <div class="start-overlay" id="startOverlay">
+      <h3>⏱ タイムアタック</h3>
+      <p>制限時間は <b>60秒</b>！<br>下のことばボタンをタップして<br>空らんをできるだけ多くうめよう。<br>時間切れになると自動でこたえ合わせされるよ。</p>
+      <button class="start-btn" id="startBtn">スタート！</button>
+    </div>
   `;
-  document.getElementById("backBtn").addEventListener("click", goHome);
-  document.getElementById("gradeBtn").addEventListener("click", gradeTable);
+  document.getElementById("backBtn").addEventListener("click", ()=>{ stopTableTimer(); goHome(); });
+  document.getElementById("gradeBtn").addEventListener("click", ()=> gradeTable(false));
   document.getElementById("clearBtn").addEventListener("click", ()=>{
-    tableFill = {}; tableGraded = false;
+    if(tableGraded) return;
+    tableFill = {};
     wordBank.forEach(b=>b.usedBy=null);
     activeKey = blankOrder[0] || null;
     document.getElementById("tableFeedback").textContent = "";
     drawTable();
   });
   document.getElementById("reshuffleBtn").addEventListener("click", ()=>{
+    stopTableTimer();
     buildTableBlanks();
     document.getElementById("tableFeedback").textContent = "";
+    document.getElementById("tableFeedback").className = "feedback";
     drawTable();
+    showStartOverlay();
+  });
+  document.getElementById("startBtn").addEventListener("click", ()=>{
+    getCtx(); // iOSの音を解除
+    document.getElementById("startOverlay").classList.add("hidden");
+    startTableTimer();
   });
   drawTable();
 };
+
+function showStartOverlay(){
+  const ov = document.getElementById("startOverlay");
+  if(ov) ov.classList.remove("hidden");
+  updateTimerDisplay(TABLE_TIME);
+}
+
+/* --- タイマー --- */
+const TABLE_TIME = 60;
+let tableTimerId = null;
+let tableEndAt = 0;
+
+function updateTimerDisplay(sec){
+  const num = document.getElementById("timerNum");
+  const fill = document.getElementById("timerFill");
+  const wrap = document.getElementById("timerWrap");
+  if(!num || !fill || !wrap) return;
+  const s = Math.max(0, sec);
+  num.textContent = s.toFixed(1);
+  fill.style.width = (s / TABLE_TIME * 100) + "%";
+  if(s <= 15) wrap.classList.add("warn"); else wrap.classList.remove("warn");
+}
+
+function startTableTimer(){
+  stopTableTimer();
+  tableEndAt = Date.now() + TABLE_TIME*1000;
+  updateTimerDisplay(TABLE_TIME);
+  let lastBeepSec = null;
+  tableTimerId = setInterval(()=>{
+    const left = (tableEndAt - Date.now())/1000;
+    updateTimerDisplay(left);
+    const whole = Math.ceil(left);
+    if(whole <= 5 && whole >= 1 && whole !== lastBeepSec){
+      lastBeepSec = whole;
+      beep(660, 0.08, "square");
+    }
+    if(left <= 0){
+      stopTableTimer();
+      gradeTable(true);
+    }
+  }, 100);
+}
+
+function stopTableTimer(){
+  if(tableTimerId){ clearInterval(tableTimerId); tableTimerId = null; }
+}
+
+function gradeTable(timeUp){
+  stopTableTimer();
+  const total = blankOrder.length;
+  let correct = 0;
+  blankOrder.forEach(key=>{
+    const bankId = tableFill[key];
+    if(bankId !== undefined && wordBank[bankId].word === tableAnswers[key]) correct++;
+  });
+  tableGraded = true;
+  activeKey = null;
+  drawTable();
+
+  const usedSec = timeUp ? TABLE_TIME : Math.min(TABLE_TIME, TABLE_TIME - Math.max(0,(tableEndAt - Date.now())/1000));
+  stats.table.plays = (stats.table.plays||0)+1;
+  if(!stats.table.best || correct > stats.table.best){ stats.table.best = correct; }
+  saveStats(stats);
+
+  const fb = document.getElementById("tableFeedback");
+  fb.className = "feedback " + (correct===total ? "ok":"no");
+  let msg = `${correct} / ${total} 問正解！`;
+  if(timeUp) msg = "⏰ 時間切れ！ " + msg;
+  else msg += `（${usedSec.toFixed(1)}秒）`;
+  if(correct===total && !timeUp) msg += " かんぺき！🎉";
+  fb.textContent = msg;
+  if(correct===total && total>0 && !timeUp){ playCorrect(); } else { playWrong(); }
+}
 
 function drawTable(){ renderTableBody(); renderBank(); updateBankTitle(); }
 
@@ -586,21 +695,7 @@ function renderBank(){
   });
 }
 
-function gradeTable(){
-  const total = blankOrder.length;
-  let correct = 0;
-  blankOrder.forEach(key=>{
-    const bankId = tableFill[key];
-    if(bankId !== undefined && wordBank[bankId].word === tableAnswers[key]) correct++;
-  });
-  tableGraded = true;
-  activeKey = null;
-  drawTable();
-  const fb = document.getElementById("tableFeedback");
-  fb.className = "feedback " + (correct===total ? "ok":"no");
-  fb.textContent = `${correct} / ${total} 問正解！` + (correct===total ? " かんぺき！🎉" : "");
-  if(correct===total && total>0){ playCorrect(); } else { playWrong(); }
-}
+function gradeTableLegacyRemoved(){}
 
 /* ===================== 画面：4択（共通） ===================== */
 function renderChoiceQuiz(mode){
@@ -889,7 +984,7 @@ screens.grammar = function(){
 
       <h3 class="sub-title">③ be動詞（am・are・is）の使い分け</h3>
       <div class="grammar-block">
-        主語によって、be動詞は3つの中から1つを選ぶよ。
+        be動詞は、主語の<b>人称</b>と<b>数</b>によって使い分けるよ。
         <div class="example"><b>I</b> → <b>am</b>（自分1人のときだけ）</div>
         <div class="example"><b>he / she / it</b>（三人称・単数） → <b>is</b></div>
         <div class="example"><b>you / we / they</b>（複数、または you 単数） → <b>are</b></div>
@@ -897,18 +992,34 @@ screens.grammar = function(){
         <p style="font-size:0.82rem;color:#777;margin:0;">この語呂合わせを声に出して覚えると、be動詞の使い分けがすぐに身につくよ。</p>
       </div>
 
-      <h3 class="sub-title">④ 短縮形もチェック</h3>
+      <h3 class="sub-title">④ 名前や名詞が主語のときは？</h3>
       <div class="grammar-block">
-        会話ではよく短くするよ。
-        <div class="example">I am → <b>I'm</b>　／　you are → <b>you're</b>　／　he is → <b>he's</b><br>
-        she is → <b>she's</b>　／　it is → <b>it's</b>　／　we are → <b>we're</b>　／　they are → <b>they're</b></div>
+        Taro や My mother のように、人称代名詞ではない言葉が主語になることもあるね。
+        そのときは、<b>いったん人称代名詞に置きかえて</b>から、対応するbe動詞を決めよう。
+        <div class="example">Taro → <b>He</b>　だから　Taro <b>is</b> a student.</div>
+        <div class="example">My mother → <b>She</b>　だから　My mother <b>is</b> a nurse.</div>
+        <div class="example">This book → <b>It</b>　だから　This book <b>is</b> new.</div>
+        <div class="example">You and I → <b>We</b>　だから　You and I <b>are</b> friends.</div>
+        <div class="example">Taro and Hanako → <b>They</b>　だから　Taro and Hanako <b>are</b> here.</div>
+        <p style="font-size:0.82rem;color:#777;margin:6px 0 0;">
+          コツ：①自分がふくまれる？→ We ／ ②相手だけ？→ You ／ ③それ以外で1人（1つ）？→ He・She・It ／ ④それ以外で2人（2つ）以上？→ They
+        </p>
       </div>
 
-      <h3 class="sub-title">⑤ おぼえるコツ</h3>
+      <h3 class="sub-title">⑤ 短縮形もチェック</h3>
       <div class="grammar-block">
-        1. まずは「表をうめる」モードで表全体の形を確認しよう。<br>
-        2. 「日本語→英語」「英語→日本語」の4択で単語自体をしっかり覚えよう。<br>
-        3. 最後に「主語とbe動詞セット」で、主語を見た瞬間にam/are/isが出てくるように練習しよう。
+        会話では、主語とbe動詞をくっつけて1語にすることが多いよ。
+        be動詞の1文字が消えて、消えた印として<b>アポストロフィ（'）</b>をつけるんだ。
+        <div class="example">I am → <b>I'm</b>　／　you are → <b>you're</b>　／　he is → <b>he's</b><br>
+        she is → <b>she's</b>　／　it is → <b>it's</b>　／　we are → <b>we're</b>　／　they are → <b>they're</b></div>
+        <p style="font-size:0.82rem;color:#777;margin:0;">※ its（それの）と it's（it is）は形が似ているので注意！</p>
+      </div>
+
+      <h3 class="sub-title">⑥ おぼえるコツ</h3>
+      <div class="grammar-block">
+        1. 「セットでおぼえる」カードで、主語とbe動詞をペアで頭に入れよう。<br>
+        2. 「be動詞クイズ」で、主語を見た瞬間にam/are/isが出てくるまで練習しよう。<br>
+        3. 「表をうめる」で4つの格をかくにん、「短縮形クイズ」で仕上げ！
       </div>
     </div>
   `;
